@@ -1,4 +1,4 @@
-import os
+import os, sys
 from collections import defaultdict
 
 
@@ -28,14 +28,16 @@ class Pessoa:
 
 def main():
     pessoas_dict = {}
+    val = True
     
-    with open(r'TPC1\emd.csv', 'r', encoding='utf-8') as file:
-        next(file)
-        for line in file:
-            data = line.strip().split(',')
-            if data:
-                pessoa = Pessoa(*data)
-                pessoas_dict[pessoa._id] = pessoa
+    for line in sys.stdin:
+        if val:
+            val = False
+            continue
+        data = line.strip().split(',')
+        if data:
+            pessoa = Pessoa(*data)
+            pessoas_dict[pessoa._id] = pessoa
                 
     modalidades = set()
     total_aptos = total_inaptos = 0
@@ -48,38 +50,22 @@ def main():
         else:
             total_inaptos += 1
         escaloes[(pessoa.idade // 5) * 5].append(pessoa)
-        
-    os.makedirs(r'TPC1\results', exist_ok=True)
-            
+
     modalidades = sorted(modalidades)
     print()
-    print("Lista ordenada alfabeticamente das modalidades desportivas")
+    print("Lista ordenada alfabeticamente das modalidades desportivas:")
     print(modalidades)
     print()
     
-    with open(r'TPC1\results\modalidades.txt', 'w', encoding='utf-8') as file:
-        file.write('\n'.join(modalidades))
-    
-    total_aptos_percetagem = total_aptos / (total_aptos + total_inaptos) * 100
-    total_inaptos_percetagem = total_inaptos / (total_aptos + total_inaptos) * 100
-    
-    print("Percentagens de atletas aptos e inaptos para a prática desportiva")
-    print(f"Aptos: {total_aptos_percetagem:.2f}%")
-    print(f"Inaptos: {total_inaptos_percetagem:.2f}%")
+    print("Percentagens de atletas aptos e inaptos para a pratica desportiva:")
+    print(f"Aptos: {(total_aptos / (total_aptos + total_inaptos) * 100):.2f}%")
+    print(f"Inaptos: {(total_inaptos / (total_aptos + total_inaptos) * 100):.2f}%")
     print()
     
-    with open(r'TPC1\results\percentagens.txt', 'w', encoding='utf-8') as file:
-        file.write(f"Aptos: {total_aptos_percetagem:.2f}%\n")
-        file.write(f"Inaptos: {total_inaptos_percetagem:.2f}%\n")
-    
-    print("Distribuição de atletas por escalão etário (escalão = intervalo de 5 anos):")
-    
-    with open(r'TPC1\results\escaloes.txt', 'w', encoding='utf-8') as file:
-        for escalao, pessoas in escaloes.items():
-            print(f"[{escalao}-{escalao + 4}]: {len(pessoas)}")
-            file.write(f"[{escalao}-{escalao + 4}]\n")
-            for pessoa in pessoas:
-                file.write(f"\t{pessoa}\n")
-        
+    print("Distribuicao de atletas por escalao etario (escalao = intervalo de 5 anos):")
+    for escalao, pessoas in escaloes.items():
+        print(f"[{escalao}-{escalao + 4}]: {len(pessoas)}")
+
+
 if __name__ == "__main__":
     main()
