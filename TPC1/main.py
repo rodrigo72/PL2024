@@ -29,8 +29,10 @@ def read_data():
     for line in sys.stdin:
         data = line.strip().split(config['separator'])
         if data:
-            info = Info(data[config['id_idx']], data[config['idade_idx']],
-                        data[config['modalidade_idx']], data[config['resultado_idx']])
+            info = Info(data[config['id_idx']], 
+                        data[config['idade_idx']],
+                        data[config['modalidade_idx']], 
+                        data[config['resultado_idx']])
             info_dict[info.id] = info
     return info_dict
 
