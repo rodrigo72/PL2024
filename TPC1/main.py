@@ -1,70 +1,75 @@
-import os, sys
+import sys
 from collections import defaultdict
 
+"""Constantes"""
+config = {
+    'separator': ',',
+    'age_interval': 5,
+    'id_idx': 0,
+    'idade_idx': 5,
+    'modalidade_idx': 8,
+    'resultado_idx': 12
+}
 
-class Pessoa:
-    def __init__(self, _id, index, dataEMD, primeiro_nome, último_nome, idade, 
-                 género, morada, modalidade, clube, email, federado, resultado):
-        self._id = _id
-        self.index = index
-        self.dataEMD = dataEMD
-        self.primeiro_nome = primeiro_nome
-        self.último_nome = último_nome
+"""Classe para guardar a informação de cada atleta"""
+class Info:
+    def __init__(self, id, idade, modalidade, resultado):
+        self.id = id
         self.idade = int(idade)
-        self.género = género
-        self.morada = morada
         self.modalidade = modalidade
-        self.clube = clube
-        self.email = email
-        self.federado = federado.lower() in ['true', '1', 't']
         self.resultado = resultado.lower() in ['true', '1', 't']
         
     def __str__(self):
-        return (f"{self._id} {self.index} {self.dataEMD} "
-                f"{self.primeiro_nome} {self.último_nome} {self.idade} "
-                f"{self.género} {self.morada} {self.modalidade} {self.clube} "
-                f"{self.email} {self.federado} {self.resultado}")
+        return f"{self.id};{self.idade};{self.modalidade};{self.resultado}"
 
+"""Recolha de dados"""
+def read_data():
+    info_dict = {}
+    next(sys.stdin)
+    for line in sys.stdin:
+        data = line.strip().split(config['separator'])
+        if data:
+            info = Info(data[config['id_idx']], data[config['idade_idx']],
+                        data[config['modalidade_idx']], data[config['resultado_idx']])
+            info_dict[info.id] = info
+    return info_dict
+
+"""Processamento de dados"""
+def process_data(info_dict):
+    modalidades = set()
+    total_aptos = 0
+    escaloes = defaultdict(list)
+
+    for info in info_dict.values():
+        modalidades.add(info.modalidade)
+        if info.resultado:
+            total_aptos += 1
+        escaloes[(info.idade // config['age_interval']) * config['age_interval']].append(info)
+
+    return modalidades, total_aptos, escaloes
+
+"""Aprensentação dos resultados"""
+def print_results(data_size, modalidades, total_aptos, escaloes):
+    modalidades = sorted(modalidades)
+    print("\nLista ordenada alfabeticamente das modalidades desportivas:\n", modalidades, "\n")
+    
+    print("Percentagens de atletas aptos e inaptos para a pratica desportiva:\n"
+      f"Aptos: {(total_aptos / data_size * 100):.2f}%\n"
+      f"Inaptos: {((data_size - total_aptos) / data_size * 100):.2f}%\n")
+
+    print("Distribuicao de atletas por escalao etario (escalao = intervalo de 5 anos):")
+
+    for escalao, info_list in escaloes.items():
+        info_list.sort(key=lambda x: x.idade)
+        print(f"[{escalao}-{escalao + 4}]: {len(info_list) / data_size * 100:.2f}%")
+        
+        for info in info_list:
+            print('\t', info)
 
 def main():
-    pessoas_dict = {}
-    val = True
-    
-    for line in sys.stdin:
-        if val:
-            val = False
-            continue
-        data = line.strip().split(',')
-        if data:
-            pessoa = Pessoa(*data)
-            pessoas_dict[pessoa._id] = pessoa
-                
-    modalidades = set()
-    total_aptos = total_inaptos = 0
-    escaloes = defaultdict(list)
-                
-    for pessoa in pessoas_dict.values():
-        modalidades.add(pessoa.modalidade)
-        if pessoa.resultado:
-            total_aptos += 1
-        else:
-            total_inaptos += 1
-        escaloes[(pessoa.idade // 5) * 5].append(pessoa)
-
-    modalidades = sorted(modalidades)
-    print()
-    print("Lista ordenada alfabeticamente das modalidades desportivas:")
-    print(modalidades)
-    print()
-    
-    print("Percentagens de atletas aptos e inaptos para a pratica desportiva:")
-    print(f"Aptos: {(total_aptos / (total_aptos + total_inaptos) * 100):.2f}%")
-    print(f"Inaptos: {(total_inaptos / (total_aptos + total_inaptos) * 100):.2f}%")
-    print()
-    
-    print("Distribuicao de atletas por escalao etario (escalao = intervalo de 5 anos):")
-    for escalao, pessoas in escaloes.items():
-        print(f"[{escalao}-{escalao + 4}]: {len(pessoas)}")
+    info_dict = read_data()
+    modalidades, total_aptos, escaloes = process_data(info_dict)
+    print_results(len(info_dict), modalidades, total_aptos, escaloes)
 
 
 if __name__ == "__main__":
