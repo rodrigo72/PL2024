@@ -59,7 +59,7 @@ def print_results(data_size, modalidades, total_aptos, escaloes):
       f"Aptos: {(total_aptos / data_size * 100):.2f}%\n"
       f"Inaptos: {((data_size - total_aptos) / data_size * 100):.2f}%\n")
 
-    print("Distribuicao de atletas por escalao etario (escalao = intervalo de 5 anos):")
+    print(f"Distribuicao de atletas por escalao etario (intervalo de {config['age_interval']} anos):")
 
     for escalao, info_list in escaloes.items():
         info_list.sort(key=lambda x: x.idade)
