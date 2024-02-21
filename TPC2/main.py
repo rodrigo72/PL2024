@@ -16,26 +16,6 @@ from typing import Union, Callable, Final
         (.*?)                           # matches any character between zero and unlimited times, as few times as possible, expanding as needed (lazy)
                                         # this way does not match more "**" in between other "**"
         \1                              # matches the same text captured in the first group
-
-        
-- First function used to convert bold and italic:
-
-def replace_emphasis(text: str) -> str:
-    # This function was not used
-    #     i = 0
-    #     while text.count('*') >= 2 and i < max_iter:
-    #         text = replace_emphasis(text)
-    #         i += 1
-    
-    pattern = re.compile(r'([*|_]{1,2})(.*)\1')
-
-    def replace_emphasis_aux(match):
-        tags = match.group(1)
-        content = match.group(2)                    
-        type_tag = 'b' if len(tags) == 2 else 'i'
-        return f'<{type_tag}>' + content + f'</{type_tag}>'
-
-    return pattern.sub(repl=replace_emphasis_aux, string=text)
 """
 
 
