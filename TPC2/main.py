@@ -38,7 +38,7 @@ class Element:
             return text
         
 
-class Parser:
+class Converter:
     def __init__(self):
         self.elements: Final[Element] = [
             Element(
@@ -112,7 +112,7 @@ class Parser:
 
 def main():
     file = sys.stdin.read()
-    file = Parser().run(file)
+    file = Converter().run(file)
     print(file)
     
 

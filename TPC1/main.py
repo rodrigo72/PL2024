@@ -11,8 +11,9 @@ config = {
     'resultado_idx': 12
 }
 
-"""Classe para guardar a informação de cada atleta"""
+
 class Info:
+    """Classe para guardar a informação de cada atleta"""
     def __init__(self, id, idade, modalidade, resultado):
         self.id = id
         self.idade = int(idade)
@@ -22,8 +23,9 @@ class Info:
     def __str__(self):
         return f"{self.id};{self.idade};{self.modalidade};{self.resultado}"
 
-"""Recolha de dados"""
+
 def read_data():
+    """Recolha de dados"""
     info_dict = {}
     next(sys.stdin)
     for line in sys.stdin:
@@ -36,8 +38,9 @@ def read_data():
             info_dict[info.id] = info
     return info_dict
 
-"""Processamento de dados"""
+
 def process_data(info_dict):
+    """Processamento de dados"""
     modalidades = set()
     total_aptos = 0
     escaloes = defaultdict(list)
@@ -50,8 +53,8 @@ def process_data(info_dict):
 
     return modalidades, total_aptos, escaloes
 
-"""Aprensentação dos resultados"""
 def print_results(data_size, modalidades, total_aptos, escaloes):
+    """Aprensentação dos resultados"""
     modalidades = sorted(modalidades)
     print("\nLista ordenada alfabeticamente das modalidades desportivas:\n", modalidades, "\n")
     
@@ -67,6 +70,7 @@ def print_results(data_size, modalidades, total_aptos, escaloes):
         
         for info in info_list:
             print('\t', info)
+
 
 def main():
     info_dict = read_data()
