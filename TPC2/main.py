@@ -10,7 +10,8 @@ from typing import Union, Callable, Final
                                         #                      2. Match a "`" character
                                         #                      3. Match any character that is not "`", "\n" or "\r", [0, inf] times
                                         #                      4. Match a "`" character
-            *[^`]*$)                    # match the previous group 0 or more times (as many as possible -- * is greedy) -- a code area. And match a character that is not "`" 0 or more times until the end of the line -- no "`" left
+            *[^`]*$)                    # match the previous group 0 or more times (as many as possible -- * is greedy) -- a code area. 
+                                        # match a character that is not "`" 0 or more times until the end of the line -- no "`" left
         )                               #
         (?=[^*])                        # positive lookahead; keep "*" out of the second group
         (.*?)                           # matches any character between zero and unlimited times, as few times as possible, expanding as needed (lazy)
