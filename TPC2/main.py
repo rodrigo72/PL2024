@@ -60,57 +60,67 @@ class Element:
 class Parser:
     def __init__(self):
         self.elements: Final[Element] = [
-            Element('Image', 
-                    r'\!\[([^\]]*)\]\(([^\)]*)\)', 
-                    r'<img src="\2" alt="\1"/>'
-                    ),
-            Element('Link', 
-                    r'\[([^\]]*)\]\(([^\)]*)\)', 
-                    r'<a href="\2">\1</a>'
-                    ),
-            Element('Bold', 
-                    r'(\*\*|__)(?=(?:(?:[^`]*`[^`\r\n]*`)*[^`]*$))(?=[^*])(.*?)\1', 
-                    r'<b>\2</b>'
-                    ),
-            Element('Italic', 
-                    r'(\*|_)(?=(?:(?:[^`]*`[^`\r\n]*`)*[^`]*$))(.*?)\1', 
-                    r'<i>\2</i>'
-                    ),
-            Element('Header', 
-                    r'^(#{1,6})\s(.*?)\s*$', 
-                    (lambda match: f"<h{len(match.group(1))}>{match.group(2)}</h{len(match.group(1))}>"), 
-                    flags=re.MULTILINE
-                    ),
-            Element('Horizontal rule',
-                    r'^\s*-{3,}\s*$',
-                    template = r'<hr>',
-                    flags=re.MULTILINE
-                    ),
-            Element('Quote', 
-                    r'^(?:\s{0,3})(?:\>\s*)(.*)', 
-                    r'<blockquote>\1</blockquote>', 
-                    flags=re.MULTILINE, 
-                    fix=Element('Fix quote', 
-                                r'<\/blockquote>(\s?)<blockquote>', r'\1')
-                    ),
-            Element('Ordered list item', 
-                    r'^(\s{0,3})(\d+\.\s+)(.*)',
-                    r'<ol>\n\t<li>\3</li>\n</ol>',
-                    flags=re.MULTILINE,
-                    fix=Element('Fix ordered list item', 
-                                r'\s?<\/ol>\s?<ol>', r'')
-                    ),
-            Element('Bullet points',
-                    r'^(\s{0,3})([-|+]\s+)(.*)',
-                    r'<ul>\n\t<li>\3</li>\n</ul>',
-                    flags=re.MULTILINE,
-                    fix=Element('Fix bullet points', 
-                                r'\s?<\/ul>\s?<ul>', r'')
-                    ),
-            Element('Code',
-                    r"`(.*?)`",
-                    r"<code>\1</code>"
-                    )
+            Element(
+                'Image', 
+                r'\!\[([^\]]*)\]\(([^\)]*)\)', 
+                r'<img src="\2" alt="\1"/>'
+            ),
+            Element(
+                'Link', 
+                r'\[([^\]]*)\]\(([^\)]*)\)', 
+                r'<a href="\2">\1</a>'
+            ),
+            Element(
+                'Bold', 
+                r'(\*\*|__)(?=(?:(?:[^`]*`[^`\r\n]*`)*[^`]*$))(?=[^*])(.*?)\1', 
+                r'<b>\2</b>'
+            ),
+            Element(
+                'Italic', 
+                r'(\*|_)(?=(?:(?:[^`]*`[^`\r\n]*`)*[^`]*$))(.*?)\1', 
+                r'<i>\2</i>'
+            ),
+            Element(
+                'Header', 
+                r'^(#{1,6})\s(.*?)\s*$', 
+                (lambda match: f"<h{len(match.group(1))}>{match.group(2)}</h{len(match.group(1))}>"), 
+                flags=re.MULTILINE
+            ),
+            Element(
+                'Horizontal rule',
+                r'^\s*-{3,}\s*$',
+                r'<hr>',
+                flags=re.MULTILINE
+            ),
+            Element(
+                'Quote', 
+                r'^(?:\s{0,3})(?:\>\s*)(.*)', 
+                r'<blockquote>\1</blockquote>', 
+                flags=re.MULTILINE, 
+                fix=Element('Fix quote', 
+                            r'<\/blockquote>(\s?)<blockquote>', r'\1')
+            ),
+            Element(
+                'Ordered list item', 
+                r'^(\s{0,3})(\d+\.\s+)(.*)',
+                r'<ol>\n\t<li>\3</li>\n</ol>',
+                flags=re.MULTILINE,
+                fix=Element('Fix ordered list item', 
+                            r'\s?<\/ol>\s?<ol>', r'')
+            ),
+            Element(
+                'Bullet points',
+                r'^(\s{0,3})([-|+]\s+)(.*)',
+                r'<ul>\n\t<li>\3</li>\n</ul>',
+                flags=re.MULTILINE,
+                fix=Element('Fix bullet points', 
+                            r'\s?<\/ul>\s?<ul>', r'')
+            ),
+            Element(
+                'Code',
+                r"`(.*?)`",
+                r"<code>\1</code>"
+            )
         ]
         
     def run(self, text: str) -> str:
