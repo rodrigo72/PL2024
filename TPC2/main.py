@@ -1,31 +1,13 @@
 import re, sys
 from typing import Union, Callable, List
 
-"""
-- Bold regex explained:
-        (\*\*)                          # matches exactly 2 *
-        (?=                             # positive lookahead (example: q(?=u) matches a q that is followed by a 'u')
-            (?:                         # non-capturing group (ignored in the final result)
-                (?:[^`]*`[^`\r\n]*`)    # non-capturing group; 1. Match a character that is not "`", [0, inf[ times
-                                        #                      2. Match a "`" character
-                                        #                      3. Match any character that is not "`", "\n" or "\r", [0, inf] times
-                                        #                      4. Match a "`" character
-            *[^`]*$)                    # match the previous group 0 or more times (as many as possible -- * is greedy) -- a code area. 
-                                        # match a character that is not "`" 0 or more times until the end of the line -- no "`" left
-        )                               #
-        (?=[^*])                        # positive lookahead; keep "*" out of the second group
-        (.*?)                           # matches any character between zero and unlimited times, as few times as possible, expanding as needed (lazy)
-                                        # this way does not match more "**" in between other "**"
-        \1                              # matches the same text captured in the first group
-"""
-
 
 class Element:
-    def __init__(self, name: str, priority: int, pattern: str, template: Union[str, Callable[[str], str]], flags=0, fix=None):
+    def __init__(self, name: str, pattern: str, template: Union[str, Callable[[str], str]], priority: int = 100, flags=0, fix=None):
         self.name = name
-        self.priority = priority
         self.pattern = pattern
         self.template = template
+        self.priority = priority
         self.flags = flags
         self.fix = fix
         
@@ -33,76 +15,90 @@ class Element:
         return self._fix(re.sub(self.pattern, self.template, text, flags=self.flags))
     
     def _fix(self, text: str) -> str:
-        if self.fix is not None:
-            return self.fix.replace_pattern(text)
-        else:
-            return text
+        return self.fix.replace_pattern(text) if self.fix is not None else text
         
 
 class Converter:
     def __init__(self):
         self.elements: List[Element] = [
-            Element(
-                'Image', 1,
-                r'\!\[([^\]]*)\]\(([^\)]*)\)', 
-                r'<img src="\2" alt="\1"/>'
-            ),
-            Element(
-                'Link', 2,
-                r'\[([^\]]*)\]\(([^\)]*)\)', 
-                r'<a href="\2">\1</a>'
-            ),
-            Element(
-                'Bold', 3,
-                r'(\*\*|__)(?=(?:(?:[^`]*`[^`\r\n]*`)*[^`]*$))(?=[^*])(.*?)\1', 
-                r'<b>\2</b>'
-            ),
-            Element(
-                'Italic', 4,
-                r'(\*|_)(?=(?:(?:[^`]*`[^`\r\n]*`)*[^`]*$))(.*?)\1', 
-                r'<i>\2</i>'
-            ),
-            Element(
-                'Header', 5,
-                r'^(#{1,6})\s(.*?)\s*$', 
-                (lambda match: f"<h{len(match.group(1))}>{match.group(2)}</h{len(match.group(1))}>"), 
-                flags=re.MULTILINE
-            ),
-            Element(
-                'Horizontal rule', 6,
-                r'^\s*-{3,}\s*$',
-                r'<hr>',
-                flags=re.MULTILINE
-            ),
-            Element(
-                'Quote', 7,
-                r'^(?:\s{0,3})(?:\>\s*)(.*)', 
-                r'<blockquote>\1</blockquote>', 
-                flags=re.MULTILINE, 
-                fix=Element('Fix quote', 7,
-                            r'<\/blockquote>(\s?)<blockquote>', r'\1')
-            ),
-            Element(
-                'Ordered list item', 8,
-                r'^(\s{0,3})(\d+\.\s+)(.*)',
-                r'<ol>\n\t<li>\3</li>\n</ol>',
-                flags=re.MULTILINE,
-                fix=Element('Fix ordered list item', 8,
-                            r'\s?<\/ol>\s?<ol>', r'')
-            ),
-            Element(
-                'Bullet points', 9,
-                r'^(\s{0,3})([-|+]\s+)(.*)',
-                r'<ul>\n\t<li>\3</li>\n</ul>',
-                flags=re.MULTILINE,
-                fix=Element('Fix bullet points', 9,
-                            r'\s?<\/ul>\s?<ul>', r'')
-            ),
-            Element(
-                'Code', 10,
-                r"`(.*?)`",
-                r"<code>\1</code>"
-            )
+            Element
+                (
+                    'Image',
+                    r'\!\[([^\]]*)\]\(([^\)]*)\)', 
+                    r'<img src="\2" alt="\1"/>', 
+                    priority=1
+                ),
+            Element
+                (
+                    'Link',
+                    r'\[([^\]]*)\]\(([^\)]*)\)', 
+                    r'<a href="\2">\1</a>', 
+                    priority=2
+                ),
+            Element
+                (
+                    'Bold',
+                    r'(\*\*|__)(?=(?:(?:[^`]*`[^`\r\n]*`)*[^`]*$))(?=[^*])(.*?)\1', 
+                    r'<b>\2</b>', 
+                    priority=3
+                ),
+            Element
+                (
+                    'Italic',
+                    r'(\*|_)(?=(?:(?:[^`]*`[^`\r\n]*`)*[^`]*$))(.*?)\1', 
+                    r'<i>\2</i>', 
+                    priority=4
+                ),
+            Element
+                (
+                    'Header',
+                    r'^(#{1,6})\s(.*?)\s*$', 
+                    (lambda match: f"<h{len(match.group(1))}>{match.group(2)}</h{len(match.group(1))}>"), 
+                    priority=5,
+                    flags=re.MULTILINE
+                ),
+            Element
+                (
+                    'Horizontal rule',
+                    r'^\s*-{3,}\s*$',
+                    r'<hr>', 
+                    priority=6,
+                    flags=re.MULTILINE
+                ),
+            Element
+                (
+                    'Quote',
+                    r'^(?:\s{0,3})(?:\>\s*)(.*)', 
+                    r'<blockquote>\1</blockquote>',
+                    priority=7,
+                    flags=re.MULTILINE, 
+                    fix=Element('Fix quote', r'<\/blockquote>(\s?)<blockquote>', r'\1')
+                ),
+            Element
+                (
+                    'Ordered list item',
+                    r'^(\s{0,3})(\d+\.\s+)(.*)',
+                    r'<ol>\n\t<li>\3</li>\n</ol>',
+                    priority=8,
+                    flags=re.MULTILINE,
+                    fix=Element('Fix ordered list item', r'\s?<\/ol>\s?<ol>', r'')
+                ),
+            Element
+                (
+                    'Bullet points',
+                    r'^(\s{0,3})([-|+]\s+)(.*)',
+                    r'<ul>\n\t<li>\3</li>\n</ul>',
+                    flags=re.MULTILINE,
+                    priority=9,
+                    fix=Element('Fix bullet points', r'\s?<\/ul>\s?<ul>', r'')
+                ),
+            Element
+                (
+                    'Code',
+                    r"`(.*?)`",
+                    r"<code>\1</code>",
+                    priority=10
+                )
         ]
         
     def run(self, text: str) -> str:
