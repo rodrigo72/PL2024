@@ -9,7 +9,6 @@ def main():
     matches = re.findall(r'(?i)(on|off)(.*?)(?=on|off|\Z)', file, re.DOTALL)
 
     for match in matches:        
-        print(match)
         on = True if match[0].lower() == 'on' else False
         
         if on:
@@ -17,7 +16,7 @@ def main():
             total += sum(int(num) for num in numbers)
             
         if re.findall(r'\=', match[1], re.DOTALL):
-            print(f'Soma {total}')
+            print(f'Soma = {total}')
                         
 
 if __name__ == "__main__":
