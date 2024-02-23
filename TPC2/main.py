@@ -1,5 +1,5 @@
 import re, sys
-from typing import Union, Callable, List
+from typing import Union, Callable
 
 
 class Element:
@@ -20,7 +20,7 @@ class Element:
 
 class Converter:
     def __init__(self):
-        self.elements: List[Element] = [
+        self.elements = [
             Element
                 (
                     'Image',
@@ -88,8 +88,8 @@ class Converter:
                     'Bullet points',
                     r'^(\s{0,3})([-|+]\s+)(.*)',
                     r'<ul>\n\t<li>\3</li>\n</ul>',
-                    flags=re.MULTILINE,
                     priority=9,
+                    flags=re.MULTILINE,
                     fix=Element('Fix bullet points', r'\s?<\/ul>\s?<ul>', r'')
                 ),
             Element

@@ -44,6 +44,7 @@ example: `this is code`.
 
 ***bold italic* bold *bold italic***
 **asd***
+
 ## Horizontal rule
 
 ---
@@ -52,6 +53,7 @@ example: `this is code`.
 
 example: [title](https://www.example.com)
 example2: [oh](asdasd.com)
+example3: [**asd**](asd.com)
 
 ## Image 
 

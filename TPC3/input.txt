@@ -1,0 +1,6 @@
+"ON" para ativar a soma
+alguns números para testar: 10, 5, 8, 2
+"OFF" para desativar a soma
+portanto, estes números não vão ser somados: 120, 10, 30
+on 2 3
+off =
