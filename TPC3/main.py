@@ -13,7 +13,7 @@ def main():
         
         if on:
             numbers = re.findall(r'\d+', match[1], re.DOTALL)
-            total += sum(int(num) for num in numbers)
+            total += sum(map(int, numbers))
             
         if re.findall(r'\=', match[1], re.DOTALL):
             print(f'Soma = {total}')
