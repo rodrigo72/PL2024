@@ -125,7 +125,7 @@ class VendingMachine():
                 
     
     def t_INPUT_NUMBER(self, t):
-        r'\d+(c|e)'
+        r'(?:50(c)|20(c)|10(c)|1(e)|2(e))'
         t.type = 'COIN'
         self.balance += self.coin_value(t.value)
         return t
