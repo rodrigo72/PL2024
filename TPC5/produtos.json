@@ -1,0 +1,16 @@
+{
+    "stock": [
+        {
+            "cod": "A24",
+            "nome": "agua",
+            "preco": 0.5,
+            "quant": 6
+        },
+        {
+            "cod": "B10",
+            "nome": "sumo",
+            "preco": 1.5,
+            "quant": 3
+        }
+    ]
+}

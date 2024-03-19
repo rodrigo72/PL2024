@@ -1,12 +1,9 @@
 import ply.lex as lex
-import sys
+import sys, json
 
 """
-> In advanced parsing applications, it may be useful to have different lexing states. 
-> For instance, you may want the occurrence of a certain token or syntactic construct 
-> to trigger a different kind of lexing. PLY supports a feature that allows the 
-> underlying lexer to be put into a series of different states. Each state can 
-> have its own tokens, lexing rules, and so forth.
+> PLY supports a feature that allows the underlying lexer to be put into a series of different states. 
+> Each state can have its own tokens, lexing rules, and so forth.
 
 https://ply.readthedocs.io/en/latest/ply.html
 """
@@ -15,7 +12,7 @@ https://ply.readthedocs.io/en/latest/ply.html
 class VendingMachine():
     
     states = [
-        ('LISTING', 'inclusive'), # inclusive: adds additional tokens and rules to the default set of rules
+        ('LISTING', 'inclusive'),  # inclusive: adds additional tokens and rules to the default set of rules
         ('INPUT', 'inclusive'),
         ('SELECT', 'inclusive'),
         ('LEAVE', 'inclusive')
@@ -47,27 +44,18 @@ class VendingMachine():
     
     def coin_value(self, num):
         cur = float(num[:-1])
-
         if num[-1] == 'e':
             cur *= 100
-
-        return cur  # could throw exception for values like "300c"
+        return cur
     
     
-    def format_currency(self, val):
+    def format(self, val):
         return f"{'%0.0f'%(val,) + 'c' if val < 100 else '%0.2f'%(val / 100,) + 'e'}"
         
     
     def return_change(self):
-        denominations = {
-            '2e': 200,
-            '1e': 100,
-            '50c': 50,
-            '20c': 20,
-            '10c': 10,
-            '5c': 5,
-            '2c': 2,
-            '1c': 1
+        denominations = { 
+            '2e': 200, '1e': 100, '50c': 50, '20c': 20, '10c': 10, '5c': 5, '2c': 2, '1c': 1
         }
 
         change = {}
@@ -85,43 +73,28 @@ class VendingMachine():
         if change_str != "":
             print(f"Pode retirar o troco: {change_str}")
         
-        
-    def get_product(self, cod, inv):
-        for product in self.products:
-            if product["cod"] == cod:
-                return product
-        return inv 
-    
-    
-    def change_product_quantity(self, cod, diff):
-        for product in self.products:
-            if product["cod"] == cod:
-                product["quant"] += diff
-                return
-        return 
-        
     
     def process_request(self, option):
-        product = self.get_product(option, "Inválido")
+        product = self.products.get(option, "Inválido")
         
         if product == "Inválido":  # cod não encontrado
             print("Produto indisponível.")
-            print(f"{self.name}: Saldo = {self.format_currency(self.balance)}")
+            print(f"{self.name}: Saldo = {self.format(self.balance)}")
             
         elif product["quant"] <= 0:  # quantidade insuficiente
             print("Quantidade insuficiente.")
-            print(f"{self.name}: Saldo = {self.format_currency(self.balance)}")
+            print(f"{self.name}: Saldo = {self.format(self.balance)}")
             
         else:
             product_price = product["preco"] * 100
             if self.balance - product_price < 0:
                 print(f'{self.name}: Saldo insuficiente.')
-                print(f"{self.name}: Saldo = {self.format_currency(self.balance)}; Pedido = {self.format_currency(product_price)}")
+                print(f"{self.name}: Saldo = {self.format(self.balance)}; Pedido = {self.format(product_price)}")
             else:
                 self.balance -= product_price;
-                self.change_product_quantity(option, -1)
+                self.products[option]["quant"] -= 1
                 print(f'{self.name}: Pode retirar o produto dispensado "{product["nome"]}"')
-                print(f"{self.name}: Saldo = {self.format_currency(self.balance)}")
+                print(f"{self.name}: Saldo = {self.format(self.balance)}")
                 
     
     def t_INPUT_NUMBER(self, t):
@@ -151,7 +124,6 @@ class VendingMachine():
                     print("Keyword não foi reconhecida.")
 
             t.lexer.begin('INITIAL')
-
         else:
             t.lexer.begin(self.keyword_states.get(t.type, "UNKNOWN_TYPE"))
 
@@ -168,8 +140,8 @@ class VendingMachine():
         t.lexer.lineno += len(t.value)
 
         print(f"{self.name}:")
-        for p in self.products:
-            print(f'Cod: {p["cod"]},  Nome: {p["nome"]},  Quantidade: {p["quant"]},  Preço:{self.format_currency(p["preco"] * 100)}')
+        for p in self.products.values():
+            print(f'Cod: {p["cod"]},  Nome: {p["nome"]},  Quantidade: {p["quant"]},  Preço:{self.format(p["preco"] * 100)}')
 
         t.lexer.begin('INITIAL')
         
@@ -177,7 +149,7 @@ class VendingMachine():
     def t_INPUT_newline(self, t):
         r'\n+'
         t.lexer.lineno += len(t.value)
-        print(f"Saldo: {self.format_currency(self.balance)}")
+        print(f"Saldo: {self.format(self.balance)}")
         t.lexer.begin('INITIAL')
 
 
@@ -218,14 +190,28 @@ class VendingMachine():
                 pass
             
             if self.leave:
-                return    
+                return self.products
         
+
+def main(argv):
+    if (len(argv) < 2):
+        print("Usage: python main.py <input_file>")
+        return
+
+    with open(argv[1], "r") as file:
+        data = json.load(file)
+        
+    stock = data["stock"]
+    stock_dict = {}
+    for p in stock:
+        stock_dict[p["cod"]] = p
+    
+    vending_machine = VendingMachine(stock_dict)
+    products = vending_machine.run()
+        
+    with open(argv[1], "w") as file:
+        json.dump({"stock": list(products.values())}, file, indent=4)
+
         
 if __name__ == "__main__":
-    stock = [
-        {"cod": "A23", "nome": "água 0.5L", "quant": 8, "preco": 0.7},
-        {"cod": "A24", "nome": "sumo 0.5L", "quant": 1, "preco": 1.80}
-    ]
-    
-    vending_machine = VendingMachine(stock)
-    vending_machine.run()
+    main(sys.argv)
